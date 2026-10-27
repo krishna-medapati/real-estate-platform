@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PrimeHaven &mdash; Property Network</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+  :root{
+    --ink:#1B2430;
+    --paper:#EDEAE1;
+    --panel:#F6F4EE;
+    --brass:#A9793D;
+    --brass-deep:#8A6229;
+    --slate:#5B6B73;
+    --line:#D8D3C4;
+    --moss:#5F7A5A;
+    --rust:#9C3B2E;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.serif{ font-family:'Fraunces', serif; }
+  #root{ min-height:100vh; }
+
+  .shell{ display:flex; min-height:100vh; }
+
+  /* ---- Auth screen ---- */
+  .auth-wrap{
+    min-height:100vh; width:100%;
+    display:flex; align-items:stretch;
+  }
+  .auth-hero{
+    flex:1.1;
+    background:var(--ink);
+    color:var(--paper);
+    padding:64px 56px;
+    display:flex; flex-direction:column; justify-content:space-between;
+    position:relative;
+    overflow:hidden;
+  }
+  .auth-hero::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:
+      repeating-linear-gradient(90deg, rgba(237,234,225,0.055) 0 1px, transparent 1px 64px),
+      repeating-linear-gradient(0deg, rgba(237,234,225,0.055) 0 1px, transparent 1px 64px);
+    pointer-events:none;
+  }
+  .auth-hero-top{ position:relative; }
+  .auth-hero .mark{ font-size:14px; letter-spacing:0.12em; color:var(--brass); font-weight:600; }
+  .auth-hero h1{
+    font-size:52px; line-height:1.05; font-weight:500; margin:28px 0 0;
+    max-width:9.5em; position:relative;
+  }
+  .auth-hero p{ color:#C7C2B3; max-width:34em; line-height:1.6; font-size:15.5px; position:relative;}
+  .auth-hero-bottom{ position:relative; display:flex; gap:36px; }
+  .stat{ }
+  .stat b{ display:block; font-family:'Fraunces', serif; font-size:30px; color:var(--brass); font-weight:500;}
+  .stat span{ font-size:12.5px; color:#A6A192; }
+
+  .auth-form-side{
+    flex:0.9; min-width:400px;
+    display:flex; align-items:center; justify-content:center;
+    padding:40px;
+    background:var(--panel);
+  }
+  .auth-card{ width:100%; max-width:380px; }
+  .auth-card h2{ font-size:28px; font-weight:500; margin:0 0 6px; }
+  .auth-card .sub{ color:var(--slate); font-size:14px; margin-bottom:32px; }
+  .tabs{ display:flex; border-bottom:1px solid var(--line); margin-bottom:28px; }
+  .tab{
+    padding:10px 0; margin-right:28px; cursor:pointer;
+    font-size:14px; color:var(--slate); border-bottom:2px solid transparent;
+    background:none; border-top:none; border-left:none; border-right:none;
+    font-family:inherit;
+  }
+  .tab.active{ color:var(--ink); border-bottom-color:var(--brass); font-weight:600; }
+
+  label{ display:block; font-size:12.5px; color:var(--slate); margin-bottom:6px; }
+  .field{ margin-bottom:18px; }
+  input, select, textarea{
+    width:100%; padding:11px 12px; border:1px solid var(--line); border-radius:2px;
+    background:#fff; font-family:inherit; font-size:14.5px; color:var(--ink);
+  }
+  input:focus, select:focus, textarea:focus{ outline:2px solid var(--brass); outline-offset:1px; border-color:var(--brass); }
+  .role-pick{ display:flex; gap:10px; }
+  .role-btn{
+    flex:1; padding:10px; border:1px solid var(--line); background:#fff; cursor:pointer;
+    text-align:center; font-size:13.5px; color:var(--slate); border-radius:2px;
+  }
+  .role-btn.active{ border-color:var(--brass); color:var(--ink); background:#FBF3E6; font-weight:600; }
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:12px 20px; background:var(--ink); color:var(--paper);
+    border:none; cursor:pointer; font-size:14.5px; font-weight:500; border-radius:2px;
+    font-family:inherit; width:100%;
+  }
+  .btn:hover{ background:#0f151d; }
+  .btn.brass{ background:var(--brass); color:#fff; }
+  .btn.brass:hover{ background:var(--brass-deep); }
+  .btn.ghost{ background:transparent; color:var(--ink); border:1px solid var(--line); width:auto; padding:9px 16px; }
+  .btn.small{ padding:8px 14px; font-size:13px; width:auto; }
+  .btn:disabled{ opacity:0.55; cursor:default; }
+
+  .msg{ font-size:13.5px; padding:10px 12px; border-radius:2px; margin-bottom:16px; }
+  .msg.err{ background:#F7E4E0; color:var(--rust); border:1px solid #E9C1B9; }
+  .msg.ok{ background:#E7EFE5; color:var(--moss); border:1px solid #C9DAC4; }
+
+  /* ---- App shell ---- */
+  .nav{
+    width:232px; flex-shrink:0; background:var(--ink); color:var(--paper);
+    padding:28px 20px; display:flex; flex-direction:column;
+  }
+  .nav .mark{ font-family:'Fraunces', serif; font-size:20px; font-weight:500; margin-bottom:2px; }
+  .nav .mark span{ color:var(--brass); }
+  .nav .who{ font-size:12px; color:#9C9789; margin-bottom:34px; }
+  .nav .who b{ color:var(--paper); display:block; font-size:13.5px; margin-top:2px;}
+  .navlink{
+    display:block; padding:10px 12px; margin-bottom:4px; border-radius:2px;
+    color:#C7C2B3; cursor:pointer; font-size:14px; border-left:2px solid transparent;
+  }
+  .navlink.active{ background:rgba(169,121,61,0.16); color:#fff; border-left-color:var(--brass); }
+  .navlink:hover{ color:#fff; }
+  .nav-foot{ margin-top:auto; }
+
+  .main{ flex:1; padding:40px 48px; max-width:1080px; }
+  .page-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:28px; }
+  .page-head h2{ font-size:26px; font-weight:500; margin:0; }
+  .page-head .count{ color:var(--slate); font-size:13.5px; }
+
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:18px; }
+
+  .card{
+    border:1px solid var(--line); background:var(--panel); padding:20px;
+    border-radius:2px; position:relative;
+  }
+  .plate{
+    font-family:'Fraunces', serif; font-size:26px; color:var(--brass-deep);
+  }
+  .card .loc{ font-size:15.5px; font-weight:600; margin:10px 0 4px; }
+  .card .meta{ font-size:12.5px; color:var(--slate); display:flex; gap:10px; flex-wrap:wrap; }
+  .tag{
+    display:inline-block; font-size:11px; padding:3px 8px; border-radius:20px;
+    border:1px solid var(--line); color:var(--slate); text-transform:uppercase; letter-spacing:0.04em;
+  }
+  .tag.AVAILABLE{ color:var(--moss); border-color:#C9DAC4; background:#EEF3EC; }
+  .tag.UNDER_INSPECTION{ color:var(--brass-deep); border-color:#E4CFA5; background:#FBF3E6; }
+  .tag.SOLD, .tag.CANCELLED{ color:var(--rust); border-color:#E9C1B9; background:#F7E4E0; }
+  .tag.OFF_MARKET{ color:var(--slate); }
+  .tag.SCHEDULED{ color:var(--brass-deep); border-color:#E4CFA5; background:#FBF3E6; }
+  .tag.COMPLETED{ color:var(--moss); border-color:#C9DAC4; background:#EEF3EC; }
+
+  .card .row-actions{ display:flex; gap:8px; margin-top:14px; }
+
+  .panel-box{
+    border:1px solid var(--line); background:var(--panel); padding:24px; margin-bottom:24px;
+  }
+  .panel-box h3{ margin:0 0 16px; font-size:17px; font-weight:500; }
+  .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+  table{ width:100%; border-collapse:collapse; font-size:14px; }
+  th{ text-align:left; font-size:11.5px; text-transform:uppercase; letter-spacing:0.04em; color:var(--slate); padding:8px 10px; border-bottom:1px solid var(--line); }
+  td{ padding:12px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  tr:last-child td{ border-bottom:none; }
+
+  .empty{ color:var(--slate); font-size:14px; padding:32px 0; text-align:center; border:1px dashed var(--line); }
+
+  .select-inline{ width:auto; display:inline-block; padding:6px 8px; font-size:13px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useCallback } = React;
+
+/* ---------------------------------------------------------------
+   PrimeHaven frontend
+   Talks to the API Gateway (default http://localhost:8000).
+   Change GATEWAY_URL below if your gateway runs elsewhere.
+------------------------------------------------------------------*/
+const GATEWAY_URL = "http://localhost:8000";
+
+function useAuth() {
+  const [auth, setAuth] = useState(() => {
+    try {
+      const raw = localStorage.getItem("primehaven_auth");
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  });
+
+  const login = (data) => {
+    localStorage.setItem("primehaven_auth", JSON.stringify(data));
+    setAuth(data);
+  };
+  const logout = () => {
+    localStorage.removeItem("primehaven_auth");
+    setAuth(null);
+  };
+  return { auth, login, logout };
+}
+
+async function api(path, { method = "GET", token, body } = {}) {
+  const headers = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = "Bearer " + token;
+  const res = await fetch(GATEWAY_URL + path, {
+    method,
+    headers,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  let data = null;
+  try { data = await res.json(); } catch (e) { /* no body */ }
+  if (!res.ok) {
+    const errMsg = (data && data.error) ? data.error : ("Request failed (" + res.status + ")");
+    throw new Error(errMsg);
+  }
+  return data;
+}
+
+/* ---------------- Auth screen ---------------- */
+function AuthScreen({ onLogin }) {
+  const [mode, setMode] = useState("login");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("CLIENT");
+  const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setErr(""); setBusy(true);
+    try {
+      const path = mode === "login" ? "/api/auth/login" : "/api/auth/register";
+      const body = mode === "login" ? { username, password } : { username, password, role };
+      const data = await api(path, { method: "POST", body });
+      onLogin(data);
+    } catch (ex) {
+      setErr(ex.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="auth-wrap">
+      <div className="auth-hero">
+        <div className="auth-hero-top">
+          <div className="mark">PRIMEHAVEN REAL ESTATE NETWORK</div>
+          <h1>Listings, visits and inquiries&mdash;coordinated in one place.</h1>
+          <p>A microservice-backed platform for managing property inventory, guided site visits,
+             and buyer&ndash;agent communication at launch-day volume.</p>
+        </div>
+        <div className="auth-hero-bottom">
+          <div className="stat"><b>3</b><span>Independent services</span></div>
+          <div className="stat"><b>JWT</b><span>Client / agent auth</span></div>
+          <div className="stat"><b>Eureka</b><span>Service discovery</span></div>
+        </div>
+      </div>
+      <div className="auth-form-side">
+        <div className="auth-card">
+          <h2>{mode === "login" ? "Sign in" : "Create an account"}</h2>
+          <div className="sub">
+            {mode === "login" ? "Welcome back to PrimeHaven." : "Register as a buyer or a listing agent."}
+          </div>
+          <div className="tabs">
+            <button className={"tab" + (mode === "login" ? " active" : "")} onClick={() => setMode("login")}>Sign in</button>
+            <button className={"tab" + (mode === "register" ? " active" : "")} onClick={() => setMode("register")}>Register</button>
+          </div>
+          {err && <div className="msg err">{err}</div>}
+          <form onSubmit={submit}>
+            <div className="field">
+              <label>Username</label>
+              <input value={username} onChange={e => setUsername(e.target.value)} required autoFocus />
+            </div>
+            <div className="field">
+              <label>Password</label>
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+            </div>
+            {mode === "register" && (
+              <div className="field">
+                <label>Account type</label>
+                <div className="role-pick">
+                  <div className={"role-btn" + (role === "CLIENT" ? " active" : "")} onClick={() => setRole("CLIENT")}>Buyer / Client</div>
+                  <div className={"role-btn" + (role === "AGENT" ? " active" : "")} onClick={() => setRole("AGENT")}>Listing Agent</div>
+                </div>
+              </div>
+            )}
+            <button className="btn brass" disabled={busy} type="submit">
+              {busy ? "Please wait..." : (mode === "login" ? "Sign in" : "Create account")}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- Properties page ---------------- */
+function PropertiesPage({ token, role }) {
+  const [properties, setProperties] = useState([]);
+  const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ location: "", price: "", type: "Residential" });
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true); setErr("");
+    try {
+      const data = await api("/api/properties", { token });
+      setProperties(data);
+    } catch (ex) { setErr(ex.message); }
+    finally { setLoading(false); }
+  }, [token]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const createProperty = async (e) => {
+    e.preventDefault();
+    setSaving(true); setErr("");
+    try {
+      await api("/api/properties", {
+        method: "POST", token,
+        body: { location: form.location, price: parseFloat(form.price), type: form.type },
+      });
+      setForm({ location: "", price: "", type: "Residential" });
+      setShowForm(false);
+      load();
+    } catch (ex) { setErr(ex.message); }
+    finally { setSaving(false); }
+  };
+
+  const changeStatus = async (id, status) => {
+    try {
+      await api("/api/properties/" + id + "/status", { method: "PATCH", token, body: { status } });
+      load();
+    } catch (ex) { setErr(ex.message); }
+  };
+
+  return (
+    <div>
+      <div className="page-head">
+        <h2>Property listings</h2>
+        <span className="count">{properties.length} listed</span>
+      </div>
+      {err && <div className="msg err">{err}</div>}
+
+      {role === "AGENT" && (
+        <div className="panel-box">
+          <h3>{showForm ? "New listing" : "Add a property"}</h3>
+          {!showForm ? (
+            <button className="btn brass small" onClick={() => setShowForm(true)}>+ Add listing</button>
+          ) : (
+            <form onSubmit={createProperty}>
+              <div className="two-col">
+                <div className="field">
+                  <label>Location</label>
+                  <input value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} required />
+                </div>
+                <div className="field">
+                  <label>Price (USD)</label>
+                  <input type="number" step="0.01" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required />
+                </div>
+              </div>
+              <div className="field" style={{maxWidth:"240px"}}>
+                <label>Type</label>
+                <select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
+                  <option>Residential</option>
+                  <option>Commercial</option>
+                </select>
+              </div>
+              <div style={{display:"flex", gap:10}}>
+                <button className="btn brass small" disabled={saving} type="submit">{saving ? "Saving..." : "Save listing"}</button>
+                <button className="btn ghost small" type="button" onClick={() => setShowForm(false)}>Cancel</button>
+              </div>
+            </form>
+          )}
+        </div>
+      )}
+
+      {loading ? <div className="empty">Loading listings&hellip;</div> :
+        properties.length === 0 ? <div className="empty">No properties listed yet.</div> :
+        <div className="grid">
+          {properties.map(p => (
+            <div className="card" key={p.propertyId}>
+              <div className="plate">${Number(p.price).toLocaleString()}</div>
+              <div className="loc">{p.location}</div>
+              <div className="meta">
+                <span className={"tag " + p.status}>{p.status.replace("_"," ")}</span>
+                {p.type && <span className="tag">{p.type}</span>}
+              </div>
+              {role === "AGENT" && (
+                <div className="row-actions">
+                  <select className="select-inline" defaultValue={p.status} onChange={e => changeStatus(p.propertyId, e.target.value)}>
+                    <option value="AVAILABLE">Available</option>
+                    <option value="UNDER_INSPECTION">Under inspection</option>
+                    <option value="SOLD">Sold</option>
+                    <option value="OFF_MARKET">Off market</option>
+                  </select>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      }
+    </div>
+  );
+}
+
+/* ---------------- Visits page ---------------- */
+function VisitsPage({ token, role }) {
+  const [visits, setVisits] = useState([]);
+  const [properties, setProperties] = useState([]);
+  const [err, setErr] = useState("");
+  const [okMsg, setOkMsg] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState({ propertyId: "", visitDate: "" });
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true); setErr("");
+    try {
+      const [v, p] = await Promise.all([
+        api("/api/visits", { token }),
+        api("/api/properties", { token }),
+      ]);
+      setVisits(v); setProperties(p);
+    } catch (ex) { setErr(ex.message); }
+    finally { setLoading(false); }
+  }, [token]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const scheduleVisit = async (e) => {
+    e.preventDefault();
+    setSaving(true); setErr(""); setOkMsg("");
+    try {
+      await api("/api/visits", {
+        method: "POST", token,
+        body: { propertyId: parseInt(form.propertyId, 10), visitDate: form.visitDate },
+      });
+      setOkMsg("Visit scheduled.");
+      setForm({ propertyId: "", visitDate: "" });
+      load();
+    } catch (ex) { setErr(ex.message); }
+    finally { setSaving(false); }
+  };
+
+  const cancelVisit = async (id) => {
+    try {
+      await api("/api/visits/" + id, { method: "DELETE", token });
+      load();
+    } catch (ex) { setErr(ex.message); }
+  };
+
+  const propertyLabel = (id) => {
+    const p = properties.find(pr => pr.propertyId === id);
+    return p ? (p.location + " — $" + Number(p.price).toLocaleString()) : ("Property #" + id);
+  };
+
+  return (
+    <div>
+      <div className="page-head">
+        <h2>Site visits</h2>
+        <span className="count">{visits.length} on record</span>
+      </div>
+      {err && <div className="msg err">{err}</div>}
+      {okMsg && <div className="msg ok">{okMsg}</div>}
+
+      {role === "CLIENT" && (
+        <div className="panel-box">
+          <h3>Schedule a visit</h3>
+          <form onSubmit={scheduleVisit}>
+            <div className="two-col">
+              <div className="field">
+                <label>Property</label>
+                <select value={form.propertyId} onChange={e => setForm({ ...form, propertyId: e.target.value })} required>
+                  <option value="">Select a property&hellip;</option>
+                  {properties.filter(p => p.status === "AVAILABLE").map(p => (
+                    <option key={p.propertyId} value={p.propertyId}>
+                      {p.location} — ${Number(p.price).toLocaleString()}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="field">
+                <label>Date &amp; time</label>
+                <input type="datetime-local" value={form.visitDate} onChange={e => setForm({ ...form, visitDate: e.target.value })} required />
+              </div>
+            </div>
+            <button className="btn brass small" disabled={saving} type="submit">{saving ? "Scheduling..." : "Schedule visit"}</button>
+          </form>
+        </div>
+      )}
+
+      {loading ? <div className="empty">Loading visits&hellip;</div> :
+        visits.length === 0 ? <div className="empty">No visits scheduled yet.</div> :
+        <table>
+          <thead><tr><th>Property</th><th>Client</th><th>Date</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            {visits.map(v => (
+              <tr key={v.visitId}>
+                <td>{propertyLabel(v.propertyId)}</td>
+                <td>{v.userId}</td>
+                <td>{new Date(v.visitDate).toLocaleString()}</td>
+                <td><span className={"tag " + v.status}>{v.status}</span></td>
+                <td>
+                  {v.status === "SCHEDULED" && (
+                    <button className="btn ghost small" onClick={() => cancelVisit(v.visitId)}>Cancel</button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      }
+    </div>
+  );
+}
+
+/* ---------------- Inquiries page ---------------- */
+function InquiriesPage({ token, role }) {
+  const [inquiries, setInquiries] = useState([]);
+  const [properties, setProperties] = useState([]);
+  const [err, setErr] = useState("");
+  const [okMsg, setOkMsg] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState({ propertyId: "", message: "" });
+  const [saving, setSaving] = useState(false);
+  const [lastVisits, setLastVisits] = useState(null);
+
+  const load = useCallback(async () => {
+    setLoading(true); setErr("");
+    try {
+      const [i, p] = await Promise.all([
+        api("/api/inquiries", { token }),
+        api("/api/properties", { token }),
+      ]);
+      setInquiries(i); setProperties(p);
+    } catch (ex) { setErr(ex.message); }
+    finally { setLoading(false); }
+  }, [token]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const submitInquiry = async (e) => {
+    e.preventDefault();
+    setSaving(true); setErr(""); setOkMsg(""); setLastVisits(null);
+    try {
+      const res = await api("/api/inquiries", {
+        method: "POST", token,
+        body: { propertyId: parseInt(form.propertyId, 10), message: form.message },
+      });
+      setOkMsg("Inquiry sent to the listing agent.");
+      setLastVisits(res.relatedVisits || []);
+      setForm({ propertyId: "", message: "" });
+      load();
+    } catch (ex) { setErr(ex.message); }
+    finally { setSaving(false); }
+  };
+
+  const propertyLabel = (id) => {
+    const p = properties.find(pr => pr.propertyId === id);
+    return p ? p.location : ("Property #" + id);
+  };
+
+  return (
+    <div>
+      <div className="page-head">
+        <h2>Inquiries</h2>
+        <span className="count">{inquiries.length} on record</span>
+      </div>
+      {err && <div className="msg err">{err}</div>}
+      {okMsg && <div className="msg ok">{okMsg}</div>}
+      {lastVisits && lastVisits.length > 0 && (
+        <div className="msg ok">
+          Heads up: this property already has {lastVisits.length} scheduled visit(s) on file.
+        </div>
+      )}
+
+      {role === "CLIENT" && (
+        <div className="panel-box">
+          <h3>Ask about a property</h3>
+          <form onSubmit={submitInquiry}>
+            <div className="field">
+              <label>Property</label>
+              <select value={form.propertyId} onChange={e => setForm({ ...form, propertyId: e.target.value })} required>
+                <option value="">Select a property&hellip;</option>
+                {properties.map(p => (
+                  <option key={p.propertyId} value={p.propertyId}>{p.location} — ${Number(p.price).toLocaleString()}</option>
+                ))}
+              </select>
+            </div>
+            <div className="field">
+              <label>Message to the agent</label>
+              <textarea rows="3" value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} required />
+            </div>
+            <button className="btn brass small" disabled={saving} type="submit">{saving ? "Sending..." : "Send inquiry"}</button>
+          </form>
+        </div>
+      )}
+
+      {loading ? <div className="empty">Loading inquiries&hellip;</div> :
+        inquiries.length === 0 ? <div className="empty">No inquiries yet.</div> :
+        <table>
+          <thead><tr><th>Property</th><th>From</th><th>Message</th><th>Sent</th></tr></thead>
+          <tbody>
+            {inquiries.map(i => (
+              <tr key={i.inquiryId}>
+                <td>{propertyLabel(i.propertyId)}</td>
+                <td>{i.userId}</td>
+                <td style={{maxWidth:"320px"}}>{i.message}</td>
+                <td>{new Date(i.createdAt).toLocaleString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      }
+    </div>
+  );
+}
+
+/* ---------------- App shell ---------------- */
+function App() {
+  const { auth, login, logout } = useAuth();
+  const [page, setPage] = useState("properties");
+
+  if (!auth) return <AuthScreen onLogin={login} />;
+
+  const pages = {
+    properties: <PropertiesPage token={auth.token} role={auth.role} />,
+    visits: <VisitsPage token={auth.token} role={auth.role} />,
+    inquiries: <InquiriesPage token={auth.token} role={auth.role} />,
+  };
+
+  return (
+    <div className="shell">
+      <div className="nav">
+        <div className="mark">Prime<span>Haven</span></div>
+        <div className="who">Signed in as<b>{auth.username} · {auth.role === "AGENT" ? "Agent" : "Buyer"}</b></div>
+        <div className={"navlink" + (page === "properties" ? " active" : "")} onClick={() => setPage("properties")}>Listings</div>
+        <div className={"navlink" + (page === "visits" ? " active" : "")} onClick={() => setPage("visits")}>Visits</div>
+        <div className={"navlink" + (page === "inquiries" ? " active" : "")} onClick={() => setPage("inquiries")}>Inquiries</div>
+        <div className="nav-foot">
+          <button className="btn ghost small" style={{color:"#EDEAE1", borderColor:"#3A4450"}} onClick={logout}>Sign out</button>
+        </div>
+      </div>
+      <div className="main">{pages[page]}</div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

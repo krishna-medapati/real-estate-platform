@@ -1,0 +1,26 @@
+server:
+  port: 8012
+
+spring:
+  application:
+    name: inquiry-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/inquiry_db
+    username: postgres
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:9000/eureka/
+  instance:
+    prefer-ip-address: false
+    hostname: localhost
+
+jwt:
+  secret: ${JWT_SECRET:PrimeHaven-SOA-2026-Super-Secret-Signing-Key-Change-Me-In-Prod}

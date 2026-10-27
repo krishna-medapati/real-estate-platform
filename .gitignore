@@ -1,0 +1,9 @@
+/.metadata/
+
+target/
+.DS_Store
+.metadata/
+.settings/
+.classpath
+.project
+*.zip
